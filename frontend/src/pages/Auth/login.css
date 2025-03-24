@@ -1,0 +1,78 @@
+/* Full Page Layout */
+.login-container {
+  height: 100vh;
+  display: flex;
+}
+
+/* Left Side: Full Image */
+.login-image {
+  width: 50%;
+  background: url("banner.jpg") no-repeat center center;
+  background-size: cover;
+}
+
+/* Right Side: Login Form */
+.login-form-container {
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+}
+
+/* Login Form */
+.login-form {
+  width: 450px;
+  padding: 3rem;
+  border-radius: 12px;
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Logo */
+.login-logo {
+  height: 100px;
+}
+
+/* Titles */
+.signin-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #204c34;
+}
+
+.login-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Input Fields */
+.login-input {
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  transition: all 0.3s;
+}
+
+/* Remember Me & Forgot Password */
+.form-check-label {
+  font-size: 0.9rem;
+}
+
+/* Login Button */
+.btn-success {
+  background: #059669;
+  border: none;
+  border-radius: 8px;
+}
+
+.btn-success:hover {
+  background: #047857;
+}
+
+
+.login-form-btn{
+  border-radius: 50px;
+}
+
