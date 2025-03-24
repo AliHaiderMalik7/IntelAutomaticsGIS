@@ -1,0 +1,8 @@
+.env
+env
+venv
+migrations
+static
+staticfiles
+media
+__pycache__
