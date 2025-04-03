@@ -14,16 +14,18 @@ import { get as getProjection } from "ol/proj.js";
 import { getWidth } from "ol/extent.js";
 
 // @ts-expect-error
- const projExtent: any = getProjection("EPSG:3857").getExtent();
- const startResolution = getWidth(projExtent) / 256;
- const resolutions = new Array(22);
- for (let i = 0, ii = resolutions.length; i < ii; ++i) {
-   resolutions[i] = startResolution / Math.pow(2, i);
- }
+const projExtent: any = getProjection("EPSG:3857").getExtent();
+const startResolution = getWidth(projExtent) / 256;
+const resolutions = new Array(22);
+for (let i = 0, ii = resolutions.length; i < ii; ++i) {
+  resolutions[i] = startResolution / Math.pow(2, i);
+}
 
+interface MapboxMapProps {
+  data: any; 
+}
 
-
-const MapboxMap: React.FC = () => {
+const MapboxMap: React.FC<MapboxMapProps> = ({ data }) => {
   const mapRef = useRef<Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   // @ts-ignore
@@ -31,18 +33,8 @@ const MapboxMap: React.FC = () => {
   const [showLayerMenu, setShowLayerMenu] = useState(false);
   const [currentStyle, setCurrentStyle] = useState("streets");
   const [showTypeMenu, setShowTypeMenu] = useState(false);
-  const [activeLayers, setActiveLayers] = useState<ImageLayer<any>[]>([]);
-  const [loading, setLoading] = useState(false); // Loading state
-  const [selectedLayerType, setSelectedLayerType] = useState<
-    "raster" | "vector" | null
-  >(null); 
-  const [showVector, setShowVector] = useState(true);
 
-  useEffect(() => {
-    console.log("activeLayers", activeLayers);
-  }, [activeLayers]);
-
-  const baseLayers = {
+  const baseLayers: any = {
     streets: new TileLayer({ source: new OSM() }),
     satellite: new TileLayer({
       source: new XYZ({
@@ -51,167 +43,165 @@ const MapboxMap: React.FC = () => {
     }),
   };
 
-  const rasterLayer = new ImageLayer({
-    source: new ImageWMS({
-      url: "http://44.244.10.225:8080/geoserver/ne/wms",
-      params: {
-        LAYERS: "ne:bog-cranberry-20241118-1",
-        FORMAT: "image/png",
-        VERSION: "1.1.1",
-      },
-      ratio: 1,
-    }),
-  });
-
-  const vectorLayer = new TileLayer({
-    source: new TileWMS({
-      url: "http://44.244.10.225:8080/geoserver/ne/wms",
-      params: {
-        LAYERS: "ne:_pred_all_merge",
-        FORMAT: "image/png",
-        VERSION: "1.1.0",
-        SRS: "EPSG:4326",
-        TRANSPARENT: true,
-      },
-      serverType: "geoserver",
-    }),
-  });
+  const [layerSelection, setLayerSelection] = useState<Record<string, boolean>>(
+    {}
+  );
+  const [layerObjects, setLayerObjects] = useState<Record<string, any>>({});
 
   useEffect(() => {
-    console.log("showVector", showVector);
-  }, [showVector]);
+    if (data?.length > 0) {
+      if (!mapRef.current && mapContainerRef.current) {
+        const map = new Map({
+          target: mapContainerRef.current,
+          layers: [baseLayers.streets],
+          view: new View({
+            center: fromLonLat([-122.483033, 49.164362]),
+            zoom: 18,
+            maxZoom: 22,
+            minZoom: 10,
+          }),
+        });
 
-  useEffect(() => {
-    if (!mapRef.current && mapContainerRef.current) {
-      const map = new Map({
-        target: mapContainerRef.current,
-        layers: [baseLayers.streets, rasterLayer, vectorLayer], 
-        view: new View({
-          center: fromLonLat([-122.479761, 49.164222]), 
-          zoom: 16,
-          maxZoom: 25,
-          minZoom: 10,
-        }),
-      });
+        mapRef.current = map;
 
-      mapRef.current = map;
+        const layersMap: Record<string, any> = {};
+        const initialSelection: Record<string, boolean> = {};
 
-     
-      setShowVector(false);
-      // @ts-ignore
+        data?.forEach((layer: any) => {
+          let layerObj;
+          if (layer.type === "raster") {
+            layerObj = new ImageLayer({
+              source: new ImageWMS({
+                url: "http://44.244.10.225:8080/geoserver/ne/wms",
+                params: {
+                  LAYERS: layer.geoserver_link,
+                  FORMAT: "image/png8",
+                  VERSION: "1.1.1",
+                },
+                ratio: 1,
+              }),
+            });
+          } else if (layer.type === "vector") {
+            layerObj = new TileLayer({
+              source: new TileWMS({
+                url: "http://44.244.10.225:8080/geoserver/ne/wms",
+                params: {
+                  LAYERS: layer.geoserver_link,
+                  FORMAT: "image/png8",
+                  VERSION: "1.1.0",
+                  SRS: "EPSG:4326",
+                  TRANSPARENT: true,
+                },
+                serverType: "geoserver",
+              }),
+            });
+          }
 
-      setActiveLayers([rasterLayer, vectorLayer]);
-      setSelectedLayerType(null);
-    }
-  }, []);
+          if (layerObj) {
+            layersMap[layer.geoserver_link] = layerObj;
+            initialSelection[layer.geoserver_link] = true;
+            map.addLayer(layerObj);
+          }
+        });
+        
 
-  useEffect(() => {
-    if (mapRef.current) {
-     
-    }
-  }, [showVector]);
-
-  const changeLayer = (style: keyof typeof baseLayers) => {
-    if (mapRef.current) {
-      const map = mapRef.current;
-      map.getLayers().clear();
-      map.addLayer(baseLayers[style]); // Set new base layer
-
-      if (selectedLayerType === "raster") {
-        // rasterLayer.setOpacity(1);
-
-        map.addLayer(rasterLayer);
-        map.addLayer(vectorLayer);
-      } else if (selectedLayerType === "vector") {
-        // vectorLayer.setOpacity(1);
-
-        map.addLayer(vectorLayer);
-        map.addLayer(rasterLayer);
+        setLayerObjects(layersMap);
+        setLayerSelection(initialSelection);
       }
-
-      setCurrentStyle(style);
-      setShowLayerMenu(false);
     }
-  };
+  }, [data]);
 
-  const simulateAPICall = () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(true);
-      }, 1000);
-    });
-  };
-
-  const toggleLayer = async (type: "raster" | "vector") => {
+  const changeLayer = (style: any) => {
     if (!mapRef.current) return;
+
     const map = mapRef.current;
+    const layers = map.getLayers();
 
-    setLoading(true);
+    layers.getArray().forEach((layer) => {
+      if (Object.values(baseLayers).includes(layer)) {
+        map.removeLayer(layer);
+      }
+    });
 
-    try {
-      await simulateAPICall();
+    const newBaseLayer = baseLayers[style];
+    map.addLayer(newBaseLayer);
 
-      if (selectedLayerType === type) {
-        setSelectedLayerType(null);
-        if (type === "raster") {
-          map.removeLayer(rasterLayer);
+    setTimeout(() => {
+      Object.entries(layerSelection).forEach(([layerName, isSelected]) => {
+
+        const layerObj = layerObjects[layerName];
+
+        if (!layerObj) return;
+
+        const mapLayers = map.getLayers().getArray();
+
+        if (isSelected) {
+          if (!mapLayers.includes(layerObj)) {
+            map.addLayer(layerObj);
+          } else {
+            map.removeLayer(layerObj);
+            map.addLayer(layerObj);
+          }
         } else {
-          map.removeLayer(vectorLayer);
+          if (mapLayers.includes(layerObj)) {
+            map.removeLayer(layerObj);
+          }
+        }
+      });
+    }, 200);
+
+    setCurrentStyle(style);
+    setShowLayerMenu(false);
+  };
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    const map = mapRef.current;
+    const layers = map.getLayers();
+
+    Object.entries(layerSelection).forEach(([layerName, isSelected]) => {
+      const layerObj = layerObjects[layerName];
+
+      if (!layerObj) return;
+
+      if (isSelected) {
+        if (!layers.getArray().includes(layerObj)) {
+          map.addLayer(layerObj);
         }
       } else {
-        setSelectedLayerType(type);
-        if (type === "raster") {
-          map.addLayer(rasterLayer);
-          map.removeLayer(vectorLayer);
-        } else {
-          map.addLayer(vectorLayer);
-          map.removeLayer(rasterLayer);
+        map.removeLayer(layerObj);
+      }
+    });
+  }, [layerSelection, layerObjects]);
+
+  const toggleLayer = (layerName: string) => {
+    setLayerSelection((prev) => {
+      const newSelection = { ...prev, [layerName]: !prev[layerName] };
+
+      if (mapRef.current) {
+        const map = mapRef.current;
+        const layers = map.getLayers().getArray();
+        const layerObj = layerObjects[layerName];
+
+        if (layerObj) {
+          if (newSelection[layerName]) {
+            if (!layers.includes(layerObj)) {
+              map.addLayer(layerObj);
+            }
+          } else {
+            map.removeLayer(layerObj);
+          }
         }
       }
-    } catch (error) {
-      console.error("Error toggling layer:", error);
-    } finally {
-      setLoading(false);
-    }
+
+      return newSelection;
+    });
   };
 
   return (
     <div style={{ position: "relative", width: "100%", height: "92vh" }}>
       <div ref={mapContainerRef} style={{ width: "100%", height: "100%" }} />
-
-      {loading && (
-        <div
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "rgba(255, 255, 255, 0.7)", // Semi-transparent background
-            padding: "20px",
-            borderRadius: "8px",
-          }}>
-          <div
-            style={{
-              width: "48px",
-              height: "48px",
-              border: "4px solid #3b82f6",
-              borderTop: "4px solid transparent",
-              borderRadius: "50%",
-              animation: "spin 1s linear infinite",
-            }}></div>
-          <style>
-            {`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}
-          </style>
-        </div>
-      )}
 
       <div
         style={{
@@ -280,36 +270,25 @@ const MapboxMap: React.FC = () => {
               borderRadius: "6px",
               padding: "8px",
             }}>
-            <button
-              onClick={() => toggleLayer("raster")}
-              style={{
-                display: "block",
-                width: "100%",
-                padding: "8px",
-                textAlign: "left",
-                backgroundColor:
-                  selectedLayerType === "raster" ? "rgb(5, 150, 105)" : "#fff",
-                color: selectedLayerType === "raster" ? "#fff" : "#000",
-                border: "none",
-                cursor: "pointer",
-              }}>
-              Raster Layer
-            </button>
-            <button
-              onClick={() => toggleLayer("vector")}
-              style={{
-                display: "block",
-                width: "100%",
-                padding: "8px",
-                textAlign: "left",
-                backgroundColor:
-                  selectedLayerType === "vector" ? "rgb(5, 150, 105)" : "#fff",
-                color: selectedLayerType === "vector" ? "#fff" : "#000",
-                border: "none",
-                cursor: "pointer",
-              }}>
-              Vector Layer
-            </button>
+            {data.map((layer: any) => (
+              <label
+                key={layer.geoserver_link}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "8px",
+                  cursor: "pointer",
+                }}>
+                <input
+                  type="checkbox"
+                  checked={layerSelection[layer.geoserver_link] || false}
+                  onChange={() => toggleLayer(layer.geoserver_link)}
+                  style={{ accentColor: "rgb(5, 150, 105)" }}
+                />
+                {layer.name.charAt(0).toUpperCase() + layer.name.slice(1)} 
+              </label>
+            ))}
           </div>
         )}
       </div>

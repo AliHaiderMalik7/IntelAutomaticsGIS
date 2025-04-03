@@ -14,8 +14,7 @@
     0.875rem,
     1vw + 0.5rem,
     1rem
-  ); /* Slightly smaller for white text */
-  /* font-weight: bold; */
+  ); 
 }
 .heading-default {
   font-size: clamp(1.125rem, 2vw + 0.5rem, 1.5rem);
@@ -39,7 +38,6 @@
   border: 1px solid #132a57;
 }
 
-/* Divider lines */
 
 .custom-hr {
   border: none;
@@ -53,14 +51,12 @@
   background-color: #ffffff;
   width: 100%;
 }
-/* Sidebar styles */
 .sidebar {
   display: flex;
   flex-direction: column;
-  /* height: 100vh; Full viewport height */
   width: 30%;
   background-color: #7c8bd4;
-  overflow: hidden; /* Prevent overflow from the sidebar */
+  overflow: hidden; 
   position: fixed;
   top: 0;
   left: 0;
@@ -72,14 +68,12 @@
 .trips {
   margin-top: 3rem;
 }
-/* Scrollable content area */
 .sidebar .content {
   flex: 1; /* Takes up available space */
   overflow-y: auto; /* Makes content scrollable */
   padding-bottom: 20px; /* Space for the fixed reset button */
 }
 
-/* Fixed reset section at the bottom */
 .reset {
   padding: 10px 0;
   cursor: pointer;
@@ -134,20 +128,17 @@
   left: -2%;
 }
 
-/* Main content styles */
 .main-content {
-  margin-left: 20%; /* Shift content to the right of the sidebar */
+  margin-left: 20%; 
   width: 80%;
-  /* padding: 2rem; */
   transition: margin-left 0.3s ease-in-out;
 }
 
 .main-content.expanded {
-  margin-left: 0; /* Expand content when sidebar is hidden */
+  margin-left: 0;
   width: 100%;
 }
 
-/* Optional Bootstrap icon size adjustments */
 .icon-size {
   font-size: 24px;
 }
@@ -158,7 +149,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  width: 195px; /* Adjust width as needed */
+  width: 195px; 
   font-size: 15px;
 }
 
@@ -170,7 +161,7 @@
 }
 
 .popup-item:hover {
-  background-color: rgba(0, 0, 0, 0.1); /* Light hover effect */
+  background-color: rgba(0, 0, 0, 0.1); 
 }
 
 .popup-divider {
@@ -190,7 +181,6 @@
   background-color: #f0f0f0 !important; /* Optional: Add a visual indicator */
 }
 
-/* Sidebar.css */
 
 .custom-slider .ant-slider-track {
   background-color: #fab23c;

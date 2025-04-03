@@ -4,35 +4,41 @@ import "./login.css";
 import { loginUser } from "../../api/loginApi";
 
 interface LoginPageProps {
-  updateToken: (token: string | null) => void; // Callback to update token in parent
+  updateToken: (token: string | null) => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ updateToken }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate(); // Redirect after login
+  const navigate = useNavigate(); 
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
+    setError(""); 
 
     try {
       const response = await loginUser(email, password);
 
       if (response.token) {
-        localStorage.setItem("token", response.token); // Store token
-        updateToken(response.token); // Update token state in parent
-        navigate("/"); // Redirect to home
+        localStorage.setItem("token", response.token); 
+        updateToken(response.token); 
+        navigate("/"); 
       }
     } catch (err: any) {
-      setError(err.message || "Login failed"); // Show error message
+      setError(err.message || "Login failed"); 
     }
   };
 
   return (
     <div className="login-container d-flex">
-      <div className="login-image"></div>
+      <div className="login-image">
+        <img
+          src="banner.jpg"
+          alt="Login Banner"
+          className="login-banner-img"
+        />
+      </div>{" "}
       <div className="login-form-container d-flex align-items-center justify-content-center">
         <div className="login-form shadow p-5 bg-white rounded">
           <div className="text-center mb-4">

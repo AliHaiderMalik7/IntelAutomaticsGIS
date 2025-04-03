@@ -1,12 +1,14 @@
 import axios from "axios";
 
-const API_URL = "http://44.244.10.225/api/auth/login/";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const loginUser = async (email: string, password: string) => {
   try {
-    const response = await axios.post(API_URL, { email, password });
+    const response = await axios.post(`${API_BASE_URL}auth/login/`, {
+      email,
+      password,
+    });
 
-    // Store token in localStorage/sessionStorage
     localStorage.setItem("token", response.data.token);
 
     return response.data;

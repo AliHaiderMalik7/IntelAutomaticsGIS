@@ -13,12 +13,10 @@ const AppRouter: React.FC = () => {
     localStorage.getItem("token")
   );
 
-  // Function to update the token state
   const updateToken = (newToken: string | null) => {
     setToken(newToken);
   };
 
-  // Listen for storage changes (for cross-tab synchronization)
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === "token") {

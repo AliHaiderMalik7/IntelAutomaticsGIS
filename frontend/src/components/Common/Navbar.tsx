@@ -1,17 +1,32 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-const Navbar: React.FC = () => {
+interface User {
+  center_lat: number | null;
+  center_long: number | null;
+  email: string;
+  first_name: string;
+  last_name: string;
+  id: number;
+  is_superuser: boolean;
+}
+
+interface NavbarProps {
+  user: User | null; 
+}
+
+const Navbar: React.FC<NavbarProps> = ({ user }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const userName = "Hey IntelAutomatics 👋";
-const navigate = useNavigate();
+  const filePath = '/data/vector_data.csv'
+  
+  const navigate = useNavigate();
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
+    window.location.reload();
+  };
 
-const handleLogout = () => {
-  localStorage.removeItem("token"); 
-  navigate("/"); 
-  window.location.reload()
-};
   return (
     <nav
       className="navbar navbar-expand-md  shadow-sm px-4"
@@ -37,7 +52,12 @@ const handleLogout = () => {
         <div className={`collapse navbar-collapse ${isOpen ? "show" : ""}`}>
           <ul className="navbar-nav ms-auto d-flex align-items-center">
             <li className="nav-item me-3">
-              <span className="black-light fw-bold fs-8 ">{userName}</span>
+              <a href={filePath} download="vector_data.csv" className="nav-link black-light fw-bold">
+                Download Data
+              </a>
+            </li>
+            <li className="nav-item me-3">
+              <span className="black-light fw-bold fs-8 ">Hey {user?.first_name} {user?.last_name} 👋</span>
             </li>
             <li className="nav-item">
               <button
