@@ -18,7 +18,7 @@ class Layer(models.Model):
     """
     name = models.CharField(max_length=255)
     geoserver_link = models.CharField(max_length=255)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='layers')
     status = models.CharField(max_length=25, choices=StatusChoices.choices, default=StatusChoices.ACTIVE)
     type = models.CharField(max_length=50, choices=Type.choices, default=Type.RASTER)
     created_at = models.DateTimeField(auto_now_add=True)
